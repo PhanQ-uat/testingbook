@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - testerBook</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+        }
+        body {
+            background-color: #f5f6fa;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin: 5px 15px;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            width: 25px;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .content-card .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+        .btn-action {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 3px;
+            transition: all 0.3s ease;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .badge-phase-1 { background-color: #28a745; }
+        .badge-phase-2 { background-color: #17a2b8; }
+        .badge-phase-3 { background-color: #ffc107; color: #000; }
+        .badge-advanced { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block sidebar py-4">
+                <div class="text-center mb-4">
+                    <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Admin</h4>
+                    <small class="text-white-50">testerBook</small>
+                </div>
+                
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="fas fa-tachometer-alt"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('training')">
+                            <i class="fas fa-book"></i>Training Posts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('projects')">
+                            <i class="fas fa-project-diagram"></i>Projects
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('content')">
+                            <i class="fas fa-file-alt"></i>Pages Content
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('users')">
+                            <i class="fas fa-users"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('settings')">
+                            <i class="fas fa-cog"></i>Settings
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="mt-5 pt-4 border-top border-light">
+                    <a class="nav-link" href="/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>View Site
+                    </a>
+                    <a class="nav-link" href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>Logout
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto main-content">
+                <!-- Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-4 border-bottom">
+                    <h1 class="h2" id="pageTitle">Admin Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <span class="badge bg-primary p-2">Admin Access</span>
+                    </div>
+                </div>
+
+                <!-- Dashboard Section -->
+                <div id="dashboardSection" class="content-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h3 class="text-primary mb-0" id="totalUsers">0</h3>
+                                        <small class="text-muted">Total Users</small>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 rounded p-3">
+                                        <i class="fas fa-users fa-2x text-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h3 class="text-success mb-0" id="totalPosts">0</h3>
+                                        <small class="text-muted">Training Posts</small>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 rounded p-3">
+                                        <i class="fas fa-book fa-2x text-success"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h3 class="text-warning mb-0" id="totalProjects">0</h3>
+                                        <small class="text-muted">Projects</small>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 rounded p-3">
+                                        <i class="fas fa-project-diagram fa-2x text-warning"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h3 class="text-info mb-0" id="activeUsers">0</h3>
+                                        <small class="text-muted">Active Today</small>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 rounded p-3">
+                                        <i class="fas fa-user-clock fa-2x text-info"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="content-card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Recent Activity</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>User</th>
+                                                    <th>Action</th>
+                                                    <th>Date</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="activityTable">
+                                                <tr>
+                                                    <td>Ha Vy</td>
+                                                    <td>Created training post</td>
+                                                    <td>04/04/2026</td>
+                                                    <td><span class="badge bg-success">Success</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>John Doe</td>
+                                                    <td>Completed project</td>
+                                                    <td>03/04/2026</td>
+                                                    <td><span class="badge bg-success">Success</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="content-card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Quick Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary" onclick="showSection('training')">
+                                            <i class="fas fa-plus me-2"></i>New Training Post
+                                        </button>
+                                        <button class="btn btn-outline-primary" onclick="showSection('projects')">
+                                            <i class="fas fa-plus me-2"></i>New Project
+                                        </button>
+                                        <button class="btn btn-outline-secondary" onclick="showSection('content')">
+                                            <i class="fas fa-edit me-2"></i>Edit Page Content
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Posts Management -->
+                <div id="trainingSection" class="content-section" style="display: none;">
+                    <div class="content-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-book me-2"></i>Training Posts</h5>
+                            <button class="btn btn-light btn-sm" onclick="openTrainingModal()">
+                                <i class="fas fa-plus me-2"></i>Add New
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="trainingSearchInput" placeholder="Search training posts...">
+                                    <button class="btn btn-primary" onclick="searchTrainingPosts()">Search</button>
+                                    <button class="btn btn-outline-secondary" onclick="loadTrainingPosts()">Reset</button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Author</th>
+                                            <th>Phase</th>
+                                            <th>Category</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="trainingTable">
+                                        <!-- Training posts will be loaded dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Management -->
+                <div id="projectsSection" class="content-section" style="display: none;">
+                    <div class="content-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Projects</h5>
+                            <button class="btn btn-light btn-sm" onclick="createNewProject()">
+                                <i class="fas fa-plus me-2"></i>Add New Project
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Project Name</th>
+                                            <th>Description</th>
+                                            <th>Difficulty</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projectsTable">
+                                        <tr>
+                                            <td>E-commerce Login Module</td>
+                                            <td>Test login functionality for e-commerce app</td>
+                                            <td><span class="badge bg-warning">Medium</span></td>
+                                            <td><span class="badge bg-success">Active</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary btn-action"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger btn-action"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Mobile Banking App</td>
+                                            <td>Mobile testing project for banking</td>
+                                            <td><span class="badge bg-danger">Hard</span></td>
+                                            <td><span class="badge bg-secondary">Draft</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary btn-action"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger btn-action"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pages Content Management -->
+                <div id="contentSection" class="content-section" style="display: none;">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Pages Content</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-home me-2"></i>Home Page</h6>
+                                            <p class="card-text text-muted small">Edit hero section, features, and community feedback</p>
+                                            <button class="btn btn-sm btn-primary" onclick="editPage('home')">Edit Content</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-info-circle me-2"></i>About Page</h6>
+                                            <p class="card-text text-muted small">Edit about content, mission, and features</p>
+                                            <button class="btn btn-sm btn-primary" onclick="editPage('about')">Edit Content</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-book me-2"></i>Self-Learning Page</h6>
+                                            <p class="card-text text-muted small">Edit training content structure and categories</p>
+                                            <button class="btn btn-sm btn-primary" onclick="editPage('training')">Edit Content</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-project-diagram me-2"></i>Projects Page</h6>
+                                            <p class="card-text text-muted small">Edit project categories and featured projects</p>
+                                            <button class="btn btn-sm btn-primary" onclick="editPage('projects')">Edit Content</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-map me-2"></i>Plans Page</h6>
+                                            <p class="card-text text-muted small">Edit learning phases and milestones</p>
+                                            <button class="btn btn-sm btn-primary" onclick="editPage('plans')">Edit Content</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Management -->
+                <div id="usersSection" class="content-section" style="display: none;">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>User Management</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Joined</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTable">
+                                        <!-- Users will be loaded dynamically via JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div id="settingsSection" class="content-section" style="display: none;">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>System Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="settingsForm">
+                                <h6 class="mb-3">General Settings</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Site Name</label>
+                                    <input type="text" class="form-control" id="siteName" value="testerBook">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Site Description</label>
+                                    <textarea class="form-control" id="siteDescription" rows="2">Learning Management System for Software Testing Students</textarea>
+                                </div>
+                                
+                                <h6 class="mb-3 mt-4">Registration Settings</h6>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="allowRegistration" checked>
+                                    <label class="form-check-label" for="allowRegistration">Allow new user registrations</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="requireApproval">
+                                    <label class="form-check-label" for="requireApproval">Require admin approval for new users</label>
+                                </div>
+                                
+                                <h6 class="mb-3 mt-4">Content Settings</h6>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="allowComments" checked>
+                                    <label class="form-check-label" for="allowComments">Allow comments on training posts</label>
+                                </div>
+                                
+                                <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Training Post Modal -->
+    <div class="modal fade" id="trainingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="trainingModalTitle">Create Training Post</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="trainingForm">
+                        <input type="hidden" id="postId">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Author (Choose User)</label>
+                                <select class="form-select" id="postAuthor" required>
+                                    <option value="">Select a user...</option>
+                                    <!-- Options will be loaded dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Post Title</label>
+                                <input type="text" class="form-control" id="postTitle" required placeholder="Enter a descriptive title">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phase</label>
+                                <select class="form-select" id="postPhase">
+                                    <option value="PHASE_1">Phase 1</option>
+                                    <option value="PHASE_2">Phase 2</option>
+                                    <option value="PHASE_3">Phase 3</option>
+                                    <option value="ADVANCED">Advanced</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" id="postCategory">
+                                    <option value="THEORY">Theory</option>
+                                    <option value="MANUAL_TESTING">Manual Testing</option>
+                                    <option value="STLC">STLC</option>
+                                    <option value="DOCUMENTATION">Documentation</option>
+                                    <option value="TEST_CASES">Test Cases</option>
+                                    <option value="BUG_TRACKING">Bug Tracking</option>
+                                    <option value="PRACTICE">Practice</option>
+                                    <option value="AUTOMATION">Automation</option>
+                                    <option value="PERFORMANCE">Performance</option>
+                                    <option value="SECURITY">Security</option>
+                                    <option value="TOOLS">Tools</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Content (Markdown supported)</label>
+                                <textarea class="form-control" id="postContent" rows="10" required placeholder="Write your training content here..."></textarea>
+                                <div class="form-text text-muted">Use # for headings, ** for bold, - for lists.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="postStatus">
+                                    <option value="PUBLISHED">Published</option>
+                                    <option value="DRAFT">Draft</option>
+                                    <option value="ARCHIVED">Archived</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTrainingPost()">Save Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadUsers();
+        });
+
+        async function loadStats() {
+            try {
+                // Fetch user count from API
+                const countResponse = await fetch('/api/admin/user-count');
+                if (countResponse.ok) {
+                    const countText = await countResponse.text();
+                    const countMatch = countText.match(/(\d+)/);
+                    if (countMatch) {
+                        document.getElementById('totalUsers').textContent = countMatch[1];
+                    }
+                }
+                
+                // For now, keep static values for posts and projects until API endpoints are created
+                document.getElementById('totalPosts').textContent = '0';
+                document.getElementById('totalProjects').textContent = '0';
+                document.getElementById('activeUsers').textContent = '0';
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                if (response.ok) {
+                    const users = await response.json();
+                    const tbody = document.getElementById('usersTable');
+                    tbody.innerHTML = '';
+                    
+                    users.forEach(user => {
+                        const row = document.createElement('tr');
+                        const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
+                        const roleBadge = getRoleBadge(user.role);
+                        
+                        row.innerHTML = `
+                            <td>${user.username || 'N/A'}</td>
+                            <td>${user.email || 'N/A'}</td>
+                            <td>${roleBadge}</td>
+                            <td>${joinedDate}</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary btn-action" onclick="editUser('${user.username}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteUser('${user.username}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function getRoleBadge(role) {
+            const roleClasses = {
+                'ADMIN': 'bg-danger',
+                'MENTOR': 'bg-info',
+                'STUDENT': 'bg-primary'
+            };
+            const badgeClass = roleClasses[role] || 'bg-secondary';
+            return `<span class="badge ${badgeClass}">${role}</span>`;
+        }
+
+        function editUser(username) {
+            alert(`Edit user: ${username} - to be implemented`);
+        }
+
+        function deleteUser(username) {
+            if (confirm(`Are you sure you want to delete user: ${username}?`)) {
+                alert(`Delete user: ${username} - to be implemented`);
+            }
+        }
+
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(section + 'Section').style.display = 'block';
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Admin Dashboard',
+                'training': 'Training Posts Management',
+                'projects': 'Projects Management',
+                'content': 'Pages Content',
+                'users': 'User Management',
+                'settings': 'System Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[section] || 'Admin Dashboard';
+            
+            // Update active nav link
+            document.querySelectorAll('.sidebar .nav-link').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Load training posts if training section is shown
+            if (section === 'training') {
+                loadTrainingPosts();
+            }
+
+            // Load settings if settings section is shown
+            if (section === 'settings') {
+                loadSettings();
+            }
+        }
+
+        // ==================== TRAINING POSTS MANAGEMENT ====================
+
+        async function loadTrainingPosts() {
+            try {
+                const response = await fetch('/api/admin/training-posts');
+                if (response.ok) {
+                    const posts = await response.json();
+                    const tbody = document.getElementById('trainingTable');
+                    tbody.innerHTML = '';
+
+                    if (posts.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No training posts found. Click "Add New" to create one.</td></tr>';
+                        return;
+                    }
+
+                    posts.forEach(post => {
+                        const row = document.createElement('tr');
+                        const postDate = post.postDate ? new Date(post.postDate).toLocaleDateString() : 'N/A';
+                        const statusBadge = getStatusBadge(post.status);
+                        const phaseBadge = getPhaseBadge(post.phase);
+
+                        row.innerHTML = `
+                            <td>${post.title || 'Untitled'}</td>
+                            <td>${post.author ? post.author.username : 'Unknown'}</td>
+                            <td>${phaseBadge}</td>
+                            <td>${post.category || 'N/A'}</td>
+                            <td>${statusBadge}</td>
+                            <td>${postDate}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary btn-action" onclick="editTrainingPost(${post.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteTrainingPost(${post.id})"><i class="fas fa-trash"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    console.error('Failed to load training posts');
+                }
+            } catch (error) {
+                console.error('Error loading training posts:', error);
+            }
+        }
+
+        async function searchTrainingPosts() {
+            const keyword = document.getElementById('trainingSearchInput').value;
+            if (!keyword) {
+                loadTrainingPosts();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/training-posts/search?keyword=${encodeURIComponent(keyword)}`);
+                if (response.ok) {
+                    const posts = await response.json();
+                    const tbody = document.getElementById('trainingTable');
+                    tbody.innerHTML = '';
+
+                    if (posts.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No training posts found matching your search.</td></tr>';
+                        return;
+                    }
+
+                    posts.forEach(post => {
+                        const row = document.createElement('tr');
+                        const postDate = post.postDate ? new Date(post.postDate).toLocaleDateString() : 'N/A';
+                        const statusBadge = getStatusBadge(post.status);
+                        const phaseBadge = getPhaseBadge(post.phase);
+
+                        row.innerHTML = `
+                            <td>${post.title || 'Untitled'}</td>
+                            <td>${post.author ? post.author.username : 'Unknown'}</td>
+                            <td>${phaseBadge}</td>
+                            <td>${post.category || 'N/A'}</td>
+                            <td>${statusBadge}</td>
+                            <td>${postDate}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary btn-action" onclick="editTrainingPost(${post.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteTrainingPost(${post.id})"><i class="fas fa-trash"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error searching training posts:', error);
+            }
+        }
+
+        function getStatusBadge(status) {
+            const statusClasses = {
+                'PUBLISHED': 'bg-success',
+                'DRAFT': 'bg-warning',
+                'ARCHIVED': 'bg-secondary'
+            };
+            const badgeClass = statusClasses[status] || 'bg-secondary';
+            return `<span class="badge ${badgeClass}">${status || 'DRAFT'}</span>`;
+        }
+
+        function getPhaseBadge(phase) {
+            const phaseClasses = {
+                'BASICS': 'bg-primary',
+                'INTERMEDIATE': 'bg-info',
+                'ADVANCED': 'bg-warning',
+                'EXPERT': 'bg-success'
+            };
+            const badgeClass = phaseClasses[phase] || 'bg-primary';
+            return `<span class="badge ${badgeClass}">${phase || 'BASICS'}</span>`;
+        }
+
+        let trainingModal;
+        document.addEventListener('DOMContentLoaded', function() {
+            trainingModal = new bootstrap.Modal(document.getElementById('trainingModal'));
+        });
+
+        async function openTrainingModal(postId = null) {
+            const form = document.getElementById('trainingForm');
+            form.reset();
+            document.getElementById('postId').value = '';
+            document.getElementById('trainingModalTitle').textContent = 'Create Training Post';
+            
+            // Load users for the dropdown
+            await loadAuthors();
+            
+            if (postId) {
+                try {
+                    const response = await fetch(`/api/admin/training-posts/${postId}`);
+                    if (response.ok) {
+                        const post = await response.json();
+                        document.getElementById('postId').value = post.id;
+                        document.getElementById('postTitle').value = post.title;
+                        document.getElementById('postContent').value = post.content;
+                        document.getElementById('postPhase').value = post.phase;
+                        document.getElementById('postCategory').value = post.category;
+                        document.getElementById('postStatus').value = post.status;
+                        if (post.author) {
+                            document.getElementById('postAuthor').value = post.author.id;
+                        }
+                        document.getElementById('trainingModalTitle').textContent = 'Edit Training Post';
+                    }
+                } catch (error) {
+                    console.error('Error loading post details:', error);
+                }
+            }
+            
+            trainingModal.show();
+        }
+
+        async function loadAuthors() {
+            try {
+                const response = await fetch('/api/admin/users');
+                if (response.ok) {
+                    const users = await response.json();
+                    const select = document.getElementById('postAuthor');
+                    const currentValue = select.value;
+                    select.innerHTML = '<option value="">Select a user...</option>';
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = `${user.username} (${user.role})`;
+                        select.appendChild(option);
+                    });
+                    if (currentValue) select.value = currentValue;
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        async function saveTrainingPost() {
+            const postId = document.getElementById('postId').value;
+            const authorId = document.getElementById('postAuthor').value;
+            const postData = {
+                title: document.getElementById('postTitle').value,
+                content: document.getElementById('postContent').value,
+                phase: document.getElementById('postPhase').value,
+                category: document.getElementById('postCategory').value,
+                status: document.getElementById('postStatus').value
+            };
+
+            if (!postData.title || !postData.content || !authorId) {
+                alert('Please fill in all required fields (Author, Title, and Content)');
+                return;
+            }
+
+            const url = postId ? `/api/admin/training-posts/${postId}` : `/api/admin/training-posts?authorId=${authorId}`;
+            const method = postId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData)
+                });
+
+                if (response.ok) {
+                    alert(postId ? 'Post updated successfully!' : 'Post created successfully!');
+                    trainingModal.hide();
+                    loadTrainingPosts();
+                    loadStats();
+                } else {
+                    const error = await response.text();
+                    alert('Failed to save post: ' + error);
+                }
+            } catch (error) {
+                console.error('Error saving post:', error);
+                alert('Error saving post');
+            }
+        }
+
+        async function editTrainingPost(id) {
+            openTrainingModal(id);
+        }
+
+        async function deleteTrainingPost(id) {
+            if (!confirm('Are you sure you want to delete this training post?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/training-posts/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Training post deleted successfully!');
+                    loadTrainingPosts();
+                    loadStats();
+                } else {
+                    alert('Failed to delete training post');
+                }
+            } catch (error) {
+                console.error('Error deleting training post:', error);
+                alert('Error deleting training post');
+            }
+        }
+
+        function createNewProject() {
+            alert('Create new project - to be implemented');
+        }
+
+        function editPage(page) {
+            alert(`Edit ${page} page content - to be implemented`);
+        }
+
+        // ==================== SETTINGS MANAGEMENT ====================
+
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings/all');
+                if (response.ok) {
+                    const settings = await response.json();
+                    document.getElementById('siteName').value = settings.siteName || 'testerBook';
+                    document.getElementById('siteDescription').value = settings.siteDescription || 'Learning Management System for Software Testing Students';
+                    document.getElementById('allowRegistration').checked = settings.allowRegistration === 'true';
+                    document.getElementById('requireApproval').checked = settings.requireApproval === 'true';
+                    document.getElementById('allowComments').checked = settings.allowComments === 'true';
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        async function saveSettings() {
+            const settings = {
+                siteName: document.getElementById('siteName').value,
+                siteDescription: document.getElementById('siteDescription').value,
+                allowRegistration: document.getElementById('allowRegistration').checked.toString(),
+                requireApproval: document.getElementById('requireApproval').checked.toString(),
+                allowComments: document.getElementById('allowComments').checked.toString()
+            };
+
+            try {
+                const response = await fetch('/api/settings/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    alert('Settings saved successfully!');
+                } else {
+                    alert('Failed to save settings');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Error saving settings');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

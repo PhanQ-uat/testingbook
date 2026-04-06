@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .register-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logo h1 {
+            color: #007bff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="register-container">
+            <div class="logo">
+                <h1 id="siteNameLogo">testerBook</h1>
+                <p class="text-muted" id="siteDescription">Start your learning journey in Software Testing</p>
+            </div>
+            
+            <form id="registerForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstName" name="firstName">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" name="lastName">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username *</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                    <div class="form-text">3-50 characters, letters and numbers only</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password *</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <div class="form-text">Minimum 6 characters</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password *</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="bio" class="form-label">Bio</label>
+                    <textarea class="form-control" id="bio" name="bio" rows="3" 
+                              placeholder="Tell us about your learning journey in software testing..."></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="role" class="form-label">I am a:</label>
+                    <select class="form-select" id="role" name="role">
+                        <option value="STUDENT">Student Learning Testing</option>
+                        <option value="MENTOR">Testing Mentor</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="terms" required>
+                    <label class="form-check-label" for="terms">
+                        I agree to the terms and conditions
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+                
+                <div class="text-center mt-3">
+                    <p>Already have an account? <a href="/login">Login here</a></p>
+                </div>
+            </form>
+            
+            <!-- Success Message (Hidden by default) -->
+            <div id="successMessage" class="alert alert-success mt-3" style="display: none;">
+                <h5>Registration Successful!</h5>
+                <p>Welcome to <span id="successSiteName">testerBook</span>! Please login with your credentials...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check if user is already logged in and redirect to home
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                // User is already logged in, redirect to home page
+                window.location.href = '/';
+                return;
+            }
+            
+            // Load site settings
+            loadSiteSettings();
+        });
+        
+        async function loadSiteSettings() {
+            try {
+                const response = await fetch('/api/settings/all');
+                if (response.ok) {
+                    const settings = await response.json();
+                    const siteName = settings.siteName || 'testerBook';
+                    const siteDesc = settings.siteDescription || 'Start your learning journey in Software Testing';
+                    
+                    document.getElementById('siteNameLogo').textContent = siteName;
+                    document.getElementById('siteDescription').textContent = siteDesc;
+                    document.getElementById('successSiteName').textContent = siteName;
+                    document.title = 'Register - ' + siteName;
+                }
+            } catch (error) {
+                console.error('Error loading site settings:', error);
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: password,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                bio: document.getElementById('bio').value,
+                role: document.getElementById('role').value
+            };
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    // Registration successful - don't store token, let user login manually
+                    
+                    // Show success message
+                    document.getElementById('registerForm').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                    
+                    // Redirect to login page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    alert('Registration failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Registration failed. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

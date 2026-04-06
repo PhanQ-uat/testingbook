@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .project-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        .progress-thin {
+            height: 6px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand logo" href="/" id="siteNameLogo">testerBook</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto" id="mainNav">
+                    <!-- Navigation will be dynamically loaded -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-4 mb-4">Projects</h1>
+            <p class="lead">Hands-on exercises and practice projects to build your testing skills</p>
+        </div>
+    </section>
+
+    <!-- Projects Grid -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2>My Practice Projects</h2>
+                    <p class="text-muted">Apply your testing knowledge to real-world scenarios</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="#" class="btn btn-primary" onclick="alert('Create new project - to be implemented')">
+                        <i class="fas fa-plus me-2"></i>New Project
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Project 1 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card project-card h-100 position-relative">
+                        <span class="badge bg-success status-badge">In Progress</span>
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary text-white rounded-circle p-3 me-3">
+                                    <i class="fas fa-shopping-cart fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="card-title mb-0">E-commerce Login Module</h5>
+                                    <small class="text-muted">Phase 1 Project</small>
+                                </div>
+                            </div>
+                            <p class="card-text">Complete testing documentation for an e-commerce login system including test scenarios, test cases, and bug reports.</p>
+                            
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>Progress</small>
+                                    <small>75%</small>
+                                </div>
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <span class="badge bg-primary me-1">Test Cases</span>
+                                <span class="badge bg-secondary me-1">Bug Reports</span>
+                                <span class="badge bg-info">Documentation</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                            <a href="#" class="btn btn-outline-primary w-100">Continue Project</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card project-card h-100 position-relative">
+                        <span class="badge bg-warning status-badge">Pending</span>
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-info text-white rounded-circle p-3 me-3">
+                                    <i class="fas fa-mobile-alt fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="card-title mb-0">Mobile App Testing</h5>
+                                    <small class="text-muted">Phase 2 Project</small>
+                                </div>
+                            </div>
+                            <p class="card-text">Testing a mobile banking application with focus on usability, security, and cross-device compatibility.</p>
+                            
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>Progress</small>
+                                    <small>0%</small>
+                                </div>
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <span class="badge bg-primary me-1">Mobile Testing</span>
+                                <span class="badge bg-secondary me-1">Security</span>
+                                <span class="badge bg-info">Usability</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                            <a href="#" class="btn btn-outline-primary w-100">Start Project</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card project-card h-100 position-relative">
+                        <span class="badge bg-secondary status-badge">Completed</span>
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success text-white rounded-circle p-3 me-3">
+                                    <i class="fas fa-bug fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="card-title mb-0">Bug Tracking Practice</h5>
+                                    <small class="text-muted">Phase 1 Exercise</small>
+                                </div>
+                            </div>
+                            <p class="card-text">Practice writing effective bug reports using various sample applications with different types of defects.</p>
+                            
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>Progress</small>
+                                    <small>100%</small>
+                                </div>
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <span class="badge bg-primary me-1">Bug Reports</span>
+                                <span class="badge bg-secondary me-1">Defect Analysis</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                            <a href="#" class="btn btn-outline-success w-100">View Results</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Categories -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="mb-4">Project Categories</h3>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center p-4">
+                        <i class="fas fa-clipboard-check fa-3x text-primary mb-3"></i>
+                        <h5>Manual Testing</h5>
+                        <p class="text-muted small">Functional testing projects</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center p-4">
+                        <i class="fas fa-robot fa-3x text-success mb-3"></i>
+                        <h5>Automation</h5>
+                        <p class="text-muted small">Selenium & API testing</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center p-4">
+                        <i class="fas fa-tachometer-alt fa-3x text-warning mb-3"></i>
+                        <h5>Performance</h5>
+                        <p class="text-muted small">Load & stress testing</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center p-4">
+                        <i class="fas fa-shield-alt fa-3x text-danger mb-3"></i>
+                        <h5>Security</h5>
+                        <p class="text-muted small">Security testing basics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <p>&copy; 2026 testerBook. Supporting your journey into Software Testing.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function loadNavigation() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                const userData = JSON.parse(user);
+                const displayName = userData.firstName && userData.lastName 
+                    ? `${userData.firstName} ${userData.lastName}`
+                    : userData.username;
+                
+                document.getElementById('mainNav').innerHTML = `
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/training">Self-learning</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/projects">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/plans">Plans</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">${displayName}</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                `;
+            } else {
+                document.getElementById('mainNav').innerHTML = `
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/training">Self-learning</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/projects">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/plans">Plans</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+                `;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        async function loadSiteSettings() {
+            try {
+                const response = await fetch('/api/settings/all');
+                if (response.ok) {
+                    const settings = await response.json();
+                    const siteName = settings.siteName || 'testerBook';
+                    document.getElementById('siteNameLogo').textContent = siteName;
+                    document.title = 'Projects - ' + siteName;
+                }
+            } catch (error) {
+                console.error('Error loading site settings:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNavigation();
+            loadSiteSettings();
+        });
+    </script>
+</body>
+</html>

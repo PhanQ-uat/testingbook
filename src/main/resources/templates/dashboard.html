@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .stat-card {
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        /* Activity Heatmap */
+        .heatmap-container { display: flex; flex-direction: column; gap: 2px; }
+        .heatmap-row { display: flex; gap: 2px; }
+        .heatmap-cell {
+            width: 12px; height: 12px; border-radius: 2px;
+            background: #ebedf0; transition: all 0.2s;
+        }
+        .heatmap-cell:hover { transform: scale(1.2); }
+        .heatmap-cell.level-0 { background: #ebedf0; }
+        .heatmap-cell.level-1 { background: #9be9a8; }
+        .heatmap-cell.level-2 { background: #40c463; }
+        .heatmap-cell.level-3 { background: #30a14e; }
+        .heatmap-cell.level-4 { background: #216e39; }
+        .heatmap-labels { font-size: 10px; color: #666; }
+        
+        /* Phase Progress */
+        .phase-tracker { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .phase-node {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 12px;
+            transition: all 0.3s;
+        }
+        .phase-node.completed { background: #28a745; color: white; }
+        .phase-node.current { background: #007bff; color: white; box-shadow: 0 0 15px rgba(0,123,255,0.5); }
+        .phase-node.pending { background: #e9ecef; color: #6c757d; }
+        .phase-connector { flex: 1; height: 4px; background: #e9ecef; border-radius: 2px; position: relative; }
+        .phase-connector.completed { background: #28a745; }
+        .phase-connector.current::after {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%;
+            background: #007bff; border-radius: 2px;
+            animation: progressPulse 2s infinite;
+        }
+        @keyframes progressPulse { 0%, 100% { width: 30%; } 50% { width: 60%; } }
+        
+        /* Badges */
+        .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; }
+        .badge-item {
+            text-align: center; padding: 15px 10px;
+            border-radius: 10px; background: #f8f9fa;
+            transition: transform 0.2s;
+        }
+        .badge-item:hover { transform: translateY(-3px); }
+        .badge-item.locked { opacity: 0.4; }
+        .badge-icon { font-size: 32px; margin-bottom: 8px; }
+        .badge-name { font-size: 11px; font-weight: 600; }
+        
+        /* Streak Counter */
+        .streak-display {
+            display: flex; align-items: center; justify-content: center;
+            gap: 20px; padding: 20px;
+        }
+        .streak-number {
+            font-size: 48px; font-weight: bold; color: #ff6b35;
+            text-shadow: 2px 2px 4px rgba(255,107,53,0.3);
+        }
+        .streak-label { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <div class="logo" id="siteNameLogo">testerBook</div>
+                        <small class="text-white-50">Learning Dashboard</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showSection('overview')">
+                                <i class="fas fa-tachometer-alt me-2"></i> Overview
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('posts')">
+                                <i class="fas fa-book me-2"></i> My Training Posts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('create')">
+                                <i class="fas fa-plus me-2"></i> Create Post
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('activities')">
+                                <i class="fas fa-chart-line me-2"></i> Activities
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('profile')">
+                                <i class="fas fa-user me-2"></i> Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('community')">
+                                <i class="fas fa-users me-2"></i> Community
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-auto pt-4">
+                        <button class="btn btn-outline-light w-100" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <h1 class="h2" id="pageTitle">Dashboard Overview</h1>
+                        <a href="/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-home me-1"></i> Back to Home
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="badge bg-primary" id="userWelcome">Welcome, Loading...</span>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i>
+                                <span id="userName">Loading...</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="showSection('profile')">
+                                    <i class="fas fa-user-edit me-2"></i>Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="showSection('settings')">
+                                    <i class="fas fa-cog me-2"></i>Settings
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <div id="overviewSection" class="content-section">
+                    <div class="row g-4 mb-4">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card stat-card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="totalPosts">0</h4>
+                                            <p class="card-text">Training Posts</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-book fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card stat-card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="totalActivities">0</h4>
+                                            <p class="card-text">Activities</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-chart-line fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card stat-card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="currentPhase">Phase 1</h4>
+                                            <p class="card-text">Current Phase</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-graduation-cap fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card stat-card bg-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="daysActive">0</h4>
+                                            <p class="card-text">Days Active</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-calendar fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase Progress Tracker -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-road me-2"></i>Learning Journey Progress</h5>
+                            <span class="badge bg-primary" id="overallProgress">0% Complete</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="phase-tracker">
+                                <div class="phase-node completed" id="phase1">P1</div>
+                                <div class="phase-connector completed" id="conn1"></div>
+                                <div class="phase-node current" id="phase2">P2</div>
+                                <div class="phase-connector current" id="conn2"></div>
+                                <div class="phase-node pending" id="phase3">P3</div>
+                                <div class="phase-connector" id="conn3"></div>
+                                <div class="phase-node pending" id="phase4">AD</div>
+                            </div>
+                            <div class="row text-center mt-3">
+                                <div class="col-3">
+                                    <small class="text-muted">Phase 1</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-success" id="progressP1" style="width: 100%"></div>
+                                    </div>
+                                    <small id="statusP1">Completed</small>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">Phase 2</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" id="progressP2" style="width: 45%"></div>
+                                    </div>
+                                    <small id="statusP2">In Progress (45%)</small>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">Phase 3</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-secondary" id="progressP3" style="width: 0%"></div>
+                                    </div>
+                                    <small id="statusP3">Not Started</small>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">Advanced</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-secondary" id="progressP4" style="width: 0%"></div>
+                                    </div>
+                                    <small id="statusP4">Not Started</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <!-- Stat Cards (Keep original) -->
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card stat-card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="totalPosts">0</h4>
+                                            <p class="card-text">Training Posts</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-book fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card stat-card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="totalActivities">0</h4>
+                                            <p class="card-text">Activities</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-chart-line fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card stat-card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="currentPhase">Phase 1</h4>
+                                            <p class="card-text">Current Phase</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-graduation-cap fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card stat-card bg-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="daysActive">0</h4>
+                                            <p class="card-text">Days Active</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-calendar fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <!-- Activity Heatmap -->
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0"><i class="fas fa-fire me-2"></i>Learning Activity (Last 4 Months)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-end gap-3">
+                                        <div id="activityHeatmap" class="heatmap-container">
+                                            <!-- Heatmap generated by JS -->
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 ms-auto">
+                                            <span class="text-muted small">Less</span>
+                                            <div class="d-flex gap-1">
+                                                <div class="heatmap-cell level-0" style="width: 12px; height: 12px;"></div>
+                                                <div class="heatmap-cell level-1" style="width: 12px; height: 12px;"></div>
+                                                <div class="heatmap-cell level-2" style="width: 12px; height: 12px;"></div>
+                                                <div class="heatmap-cell level-3" style="width: 12px; height: 12px;"></div>
+                                                <div class="heatmap-cell level-4" style="width: 12px; height: 12px;"></div>
+                                            </div>
+                                            <span class="text-muted small">More</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gamification Stats -->
+                        <div class="col-lg-4">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0"><i class="fas fa-fire-alt me-2 text-danger"></i>Learning Streak</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="streak-display">
+                                        <div class="text-center">
+                                            <div class="streak-number" id="streakCount">12</div>
+                                            <div class="streak-label">Day Streak</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <i class="fas fa-trophy fa-3x text-warning"></i>
+                                            <div class="streak-label mt-2">Keep it up!</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0"><i class="fas fa-medal me-2"></i>Achievements</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="badge-grid" id="badgeContainer">
+                                        <!-- Badges generated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Analytics Chart -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0"><i class="fas fa-chart-area me-2"></i>30-Day Learning Analytics</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="progressChart" height="100"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Recent Training Posts</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recentPosts">
+                                        <p class="text-muted">Loading recent posts...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Quick Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary" onclick="showSection('create')">
+                                            <i class="fas fa-plus me-2"></i> New Training Post
+                                        </button>
+                                        <button class="btn btn-outline-secondary" onclick="showSection('activities')">
+                                            <i class="fas fa-plus me-2"></i> Log Activity
+                                        </button>
+                                        <button class="btn btn-outline-info" onclick="showSection('profile')">
+                                            <i class="fas fa-edit me-2"></i> Edit Profile
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Post Section -->
+                <div id="createSection" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Create New Training Post</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="createPostForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="postTitle" class="form-label">Title</label>
+                                        <input type="text" class="form-control" id="postTitle" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="postPhase" class="form-label">Phase</label>
+                                        <select class="form-select" id="postPhase">
+                                            <option value="PHASE_1">Phase 1</option>
+                                            <option value="PHASE_2">Phase 2</option>
+                                            <option value="PHASE_3">Phase 3</option>
+                                            <option value="ADVANCED">Advanced</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="postCategory" class="form-label">Category</label>
+                                        <select class="form-select" id="postCategory">
+                                            <option value="DOCUMENTATION">Documentation</option>
+                                            <option value="BUG_TRACKING">Bug Tracking</option>
+                                            <option value="STLC">STLC</option>
+                                            <option value="TEST_CASES">Test Cases</option>
+                                            <option value="AUTOMATION">Automation</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="postContent" class="form-label">Content</label>
+                                    <textarea class="form-control" id="postContent" rows="10" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="postTags" class="form-label">Tags (comma separated)</label>
+                                    <input type="text" class="form-control" id="postTags" placeholder="test-summary, documentation">
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="postDraft">
+                                        <label class="form-check-label" for="postDraft">
+                                            Save as Draft
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Create Post</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other sections (Posts, Activities, Profile, Community) would go here -->
+                <div id="postsSection" class="content-section" style="display: none;">
+                    <h3>My Training Posts</h3>
+                    <p>Training posts will be loaded here...</p>
+                </div>
+
+                <div id="activitiesSection" class="content-section" style="display: none;">
+                    <h3>Activities</h3>
+                    <p>Activities will be loaded here...</p>
+                </div>
+
+                <div id="profileSection" class="content-section" style="display: none;">
+                    <h3>Profile</h3>
+                    <p>Profile information will be loaded here...</p>
+                </div>
+
+                <div id="communitySection" class="content-section" style="display: none;">
+                    <h3>Community</h3>
+                    <p>Community posts and feedback will be loaded here...</p>
+                </div>
+
+                <div id="settingsSection" class="content-section" style="display: none;">
+                    <h3>Settings</h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Account Settings</h5>
+                            <div class="mb-3">
+                                <label for="emailNotifications" class="form-label">Email Notifications</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                    <label class="form-check-label" for="emailNotifications">
+                                        Receive email notifications for new feedback
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="publicProfile" class="form-label">Profile Visibility</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="publicProfile" checked>
+                                    <label class="form-check-label" for="publicProfile">
+                                        Make profile public to community
+                                    </label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary">Save Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentUser = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadUserData();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            currentUser = JSON.parse(user);
+            loadUserData();
+        }
+
+        function loadUserData() {
+            // Load user profile data from API
+            const token = localStorage.getItem('token');
+            
+            fetch('/api/users/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(user => {
+                currentUser = user;
+                
+                // Update user display in header
+                const displayName = currentUser.firstName && currentUser.lastName 
+                    ? `${currentUser.firstName} ${currentUser.lastName}`
+                    : currentUser.username;
+                
+                document.getElementById('userWelcome').textContent = `Welcome, ${displayName}!`;
+                document.getElementById('userName').textContent = displayName;
+            })
+            .catch(error => {
+                console.error('Error loading user profile:', error);
+                // Fallback to basic user info from localStorage
+                const fallbackUser = JSON.parse(localStorage.getItem('user'));
+                const displayName = fallbackUser.firstName && fallbackUser.lastName 
+                    ? `${fallbackUser.firstName} ${fallbackUser.lastName}`
+                    : fallbackUser.username;
+                
+                document.getElementById('userWelcome').textContent = `Welcome, ${displayName}!`;
+                document.getElementById('userName').textContent = displayName;
+            });
+            
+            // Load user statistics and recent posts
+            // This would make API calls to get actual data
+            document.getElementById('totalPosts').textContent = '12';
+            document.getElementById('totalActivities').textContent = '45';
+            document.getElementById('currentPhase').textContent = 'Phase 1';
+            document.getElementById('daysActive').textContent = '30';
+            
+            // Initialize new widgets
+            loadSiteSettings();
+            loadPhaseProgress();
+            generateActivityHeatmap();
+            loadBadges();
+            renderProgressChart();
+        }
+
+        // Load site name
+        async function loadSiteSettings() {
+            try {
+                const response = await fetch('/api/settings/all');
+                if (response.ok) {
+                    const settings = await response.json();
+                    const siteName = settings.siteName || 'testerBook';
+                    document.getElementById('siteNameLogo').textContent = siteName;
+                    document.title = 'Dashboard - ' + siteName;
+                }
+            } catch (error) {
+                console.error('Error loading site settings:', error);
+            }
+        }
+
+        // Phase Progress Tracker
+        function loadPhaseProgress() {
+            // Mock data - replace with actual API call
+            const phaseData = {
+                phase1: { completed: true, progress: 100 },
+                phase2: { completed: false, progress: 45, current: true },
+                phase3: { completed: false, progress: 0 },
+                phase4: { completed: false, progress: 0 }
+            };
+
+            // Update phase nodes
+            Object.keys(phaseData).forEach((phase, index) => {
+                const node = document.getElementById(`phase${index + 1}`);
+                const data = phaseData[phase];
+                
+                node.className = 'phase-node';
+                if (data.completed) node.classList.add('completed');
+                else if (data.current) node.classList.add('current');
+                else node.classList.add('pending');
+            });
+
+            // Update connectors
+            const conn1 = document.getElementById('conn1');
+            const conn2 = document.getElementById('conn2');
+            const conn3 = document.getElementById('conn3');
+
+            conn1.className = 'phase-connector completed';
+            conn2.className = phaseData.phase2.current ? 'phase-connector current' : 'phase-connector';
+            conn3.className = 'phase-connector';
+
+            // Update progress bars
+            document.getElementById('progressP1').style.width = phaseData.phase1.progress + '%';
+            document.getElementById('progressP2').style.width = phaseData.phase2.progress + '%';
+            document.getElementById('progressP3').style.width = phaseData.phase3.progress + '%';
+            document.getElementById('progressP4').style.width = phaseData.phase4.progress + '%';
+
+            // Update status text
+            document.getElementById('statusP1').textContent = phaseData.phase1.completed ? 'Completed' : 'In Progress';
+            document.getElementById('statusP2').textContent = phaseData.phase2.current ? `In Progress (${phaseData.phase2.progress}%)` : 'Not Started';
+            document.getElementById('statusP3').textContent = 'Not Started';
+            document.getElementById('statusP4').textContent = 'Not Started';
+
+            // Update overall progress
+            const overall = Math.round((phaseData.phase1.progress + phaseData.phase2.progress + phaseData.phase3.progress + phaseData.phase4.progress) / 4);
+            document.getElementById('overallProgress').textContent = overall + '% Complete';
+        }
+
+        // Activity Heatmap (GitHub-style)
+        function generateActivityHeatmap() {
+            const container = document.getElementById('activityHeatmap');
+            const weeks = 16; // 4 months
+            const days = 7;
+            
+            let html = '';
+            
+            // Generate mock activity data
+            for (let day = 0; day < days; day++) {
+                html += '<div class="heatmap-row">';
+                for (let week = 0; week < weeks; week++) {
+                    // Random activity level 0-4
+                    const level = Math.floor(Math.random() * 5);
+                    const date = new Date();
+                    date.setDate(date.getDate() - ((weeks - week - 1) * 7 + (6 - day)));
+                    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    
+                    html += `<div class="heatmap-cell level-${level}" title="${dateStr}: ${level} activities"></div>`;
+                }
+                html += '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Gamification - Badges
+        function loadBadges() {
+            const badges = [
+                { icon: '🏃', name: 'First Step', unlocked: true },
+                { icon: '📝', name: 'Writer', unlocked: true },
+                { icon: '🔥', name: 'Streak 7', unlocked: true },
+                { icon: '📚', name: 'Bookworm', unlocked: false },
+                { icon: '⭐', name: 'Rising Star', unlocked: false },
+                { icon: '🎯', name: 'Goal Setter', unlocked: false },
+                { icon: '🏆', name: 'Champion', unlocked: false },
+                { icon: '💎', name: 'Diamond', unlocked: false }
+            ];
+
+            const container = document.getElementById('badgeContainer');
+            container.innerHTML = badges.map(badge => `
+                <div class="badge-item ${badge.unlocked ? '' : 'locked'}" title="${badge.name}">
+                    <div class="badge-icon">${badge.icon}</div>
+                    <div class="badge-name">${badge.name}</div>
+                </div>
+            `).join('');
+        }
+
+        // Progress Analytics Chart
+        function renderProgressChart() {
+            const canvas = document.getElementById('progressChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Generate 30 days of mock data
+            const days = 30;
+            const labels = [];
+            const postsData = [];
+            const activitiesData = [];
+            
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.getDate() + '/' + (date.getMonth() + 1));
+                postsData.push(Math.floor(Math.random() * 3));
+                activitiesData.push(Math.floor(Math.random() * 5));
+            }
+            
+            // Simple line chart using canvas
+            const padding = 40;
+            const width = canvas.width = canvas.offsetWidth;
+            const height = canvas.height = 200;
+            
+            const chartWidth = width - padding * 2;
+            const chartHeight = height - padding * 2;
+            
+            const maxValue = Math.max(...postsData, ...activitiesData, 5);
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw grid lines
+            ctx.strokeStyle = '#e9ecef';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (chartHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+            
+            // Draw posts line
+            ctx.strokeStyle = '#007bff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            postsData.forEach((value, index) => {
+                const x = padding + (chartWidth / (days - 1)) * index;
+                const y = padding + chartHeight - (value / maxValue) * chartHeight;
+                if (index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // Draw activities line
+            ctx.strokeStyle = '#28a745';
+            ctx.beginPath();
+            activitiesData.forEach((value, index) => {
+                const x = padding + (chartWidth / (days - 1)) * index;
+                const y = padding + chartHeight - (value / maxValue) * chartHeight;
+                if (index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // Draw legend
+            ctx.fillStyle = '#007bff';
+            ctx.fillRect(width - 150, 10, 15, 15);
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.fillText('Posts', width - 130, 22);
+            
+            ctx.fillStyle = '#28a745';
+            ctx.fillRect(width - 80, 10, 15, 15);
+            ctx.fillStyle = '#333';
+            ctx.fillText('Activities', width - 60, 22);
+        }
+
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(section + 'Section').style.display = 'block';
+            
+            // Update active nav link
+            event.target.classList.add('active');
+            
+            // Update page title
+            const titles = {
+                'overview': 'Dashboard Overview',
+                'posts': 'My Training Posts',
+                'create': 'Create New Post',
+                'activities': 'Activities',
+                'profile': 'Profile',
+                'community': 'Community',
+                'settings': 'Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/'; // Go to home page after logout
+        }
+
+        // Handle create post form
+        document.getElementById('createPostForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const postData = {
+                title: document.getElementById('postTitle').value,
+                content: document.getElementById('postContent').value,
+                phase: document.getElementById('postPhase').value,
+                category: document.getElementById('postCategory').value,
+                tags: document.getElementById('postTags').value.split(',').map(tag => tag.trim()),
+                status: document.getElementById('postDraft').checked ? 'DRAFT' : 'PUBLISHED'
+            };
+            
+            // Here you would make an API call to save the post
+            console.log('Creating post:', postData);
+            alert('Post created successfully!');
+            
+            // Reset form and show overview
+            this.reset();
+            showSection('overview');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Learning</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #2d3436;
+        }
+        .hero-section {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 80px 0;
+            margin-bottom: -50px;
+            clip-path: ellipse(150% 100% at 50% 0%);
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: white;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+        .main-card {
+            background: var(--glass-bg);
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+        .date-nav {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .date-item {
+            border: none !important;
+            border-radius: 12px !important;
+            margin-bottom: 8px;
+            padding: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+        }
+        .date-item:hover {
+            background: rgba(102, 126, 234, 0.05) !important;
+            transform: translateX(5px);
+        }
+        .date-item.active {
+            background: var(--primary-gradient) !important;
+            box-shadow: 0 10px 20px rgba(118, 75, 162, 0.2);
+        }
+        .content-area {
+            padding: 40px;
+        }
+        .phase-badge {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .post-title {
+            font-weight: 800;
+            color: #2d3436;
+            margin: 20px 0;
+            line-height: 1.3;
+        }
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #636e72;
+        }
+        .post-content h4, .post-content h5 {
+            color: #2d3436;
+            font-weight: 700;
+            margin-top: 30px;
+        }
+        .post-content p {
+            margin-bottom: 20px;
+        }
+        .meta-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .author-avatar {
+            width: 45px;
+            height: 45px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #dfe6e9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #b2bec3; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand logo" href="/" id="siteNameLogo">testerBook</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto" id="mainNav"></ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-3 fw-bold mb-3">Self-Learning Journey</h1>
+            <p class="lead opacity-75">Documentation of daily growth and technical mastery</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card main-card">
+                    <div class="card-header bg-transparent border-0 p-4 pb-0">
+                        <h5 class="fw-bold mb-0 text-primary">
+                            <i class="fas fa-calendar-alt me-2"></i>Learning Timeline
+                        </h5>
+                    </div>
+                    <div class="card-body p-2">
+                        <div class="date-nav list-group" id="dateList">
+                            <div class="text-center p-5">
+                                <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div id="trainingContainer">
+                    <div class="card main-card content-area">
+                        <div id="trainingContent">
+                            <div class="text-center p-5">
+                                <i class="fas fa-book-open fa-3x text-muted mb-3 opacity-25"></i>
+                                <h4 class="text-muted">Select a milestone to start reading</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-light py-5 mt-5">
+        <div class="container text-center">
+            <p class="mb-0 opacity-50">&copy; 2026 <p > </p>. Built for Excellence in Testing.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        function loadNavigation() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const nav = document.getElementById('mainNav');
+            
+            let commonLinks = `
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/training">Self-learning</a></li>
+                <li class="nav-item"><a class="nav-link" href="/projects">Projects</a></li>
+                <li class="nav-item"><a class="nav-link" href="/plans">Plans</a></li>
+            `;
+
+            if (token && user) {
+                const userData = JSON.parse(user);
+                const displayName = userData.firstName || userData.username;
+                nav.innerHTML = commonLinks + `
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">${displayName}</a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                            ${userData.role === 'ADMIN' ? '<li><a class="dropdown-item" href="/admin"><i class="fas fa-user-shield me-2"></i>Admin Panel</a></li>' : ''}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                `;
+            } else {
+                nav.innerHTML = commonLinks + `
+                    <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-primary text-white ms-lg-2 px-3" href="/register">Join Now</a></li>
+                `;
+            }
+        }
+
+        let allPosts = [];
+        let currentIndex = 0;
+
+        async function loadTrainingPosts() {
+            try {
+                // Fetch from the public endpoint instead of admin
+                const response = await fetch('/api/posts/public/all');
+                if (response.ok) {
+                    allPosts = await response.json();
+                    // Posts are already sorted by date DESC from backend
+                    renderDateList();
+                    if (allPosts.length > 0) {
+                        selectPost(0);
+                    } else {
+                        document.getElementById('trainingContent').innerHTML = `
+                            <div class="text-center p-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3 opacity-25"></i>
+                                <h4 class="text-muted">No training milestones found yet</h4>
+                                <p class="text-muted small">Check back later for new content!</p>
+                            </div>
+                        `;
+                        document.getElementById('currentDateTitle').textContent = 'No Posts';
+                    }
+                } else {
+                    console.error('Failed to load posts:', response.status);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderDateList() {
+            const list = document.getElementById('dateList');
+            list.innerHTML = allPosts.map((post, index) => `
+                <a href="#" class="list-group-item date-item ${index === currentIndex ? 'active' : ''}" 
+                   onclick="event.preventDefault(); selectPost(${index})">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="${index === currentIndex ? 'text-white-50' : 'text-primary'} fw-bold">
+                            ${new Date(post.postDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}
+                        </small>
+                    </div>
+                    <h6 class="mb-0 fw-bold ${index === currentIndex ? 'text-white' : ''}">${post.title}</h6>
+                </a>
+            `).join('');
+        }
+
+        function selectPost(index) {
+            currentIndex = index;
+            renderDateList();
+            const post = allPosts[index];
+            const content = document.getElementById('trainingContent');
+            
+            const phaseBadges = {
+                'PHASE_1': 'bg-primary',
+                'PHASE_2': 'bg-info',
+                'PHASE_3': 'bg-warning',
+                'ADVANCED': 'bg-danger'
+            };
+
+            content.innerHTML = `
+                <div class="animate-fade-in">
+                    <span class="badge ${phaseBadges[post.phase] || 'bg-secondary'} phase-badge mb-3">${post.phase}</span>
+                    <h1 class="post-title">${post.title}</h1>
+                    
+                    <div class="post-content">
+                        ${formatMarkdown(post.content)}
+                    </div>
+
+                    <div class="meta-info">
+                        <div class="author-avatar">${post.author ? post.author.username.charAt(0).toUpperCase() : '?'}</div>
+                        <div>
+                            <div class="fw-bold text-dark">${post.author ? post.author.username : 'Unknown Author'}</div>
+                            <small class="text-muted">Published in ${post.category || 'General'}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            return text
+                .replace(/^# (.*$)/gim, '<h2 class="mt-4 mb-3">$1</h2>')
+                .replace(/^## (.*$)/gim, '<h4 class="mt-4 mb-3">$1</h4>')
+                .replace(/^\* (.*$)/gim, '<li>$1</li>')
+                .replace(/^\- (.*$)/gim, '<li>$1</li>')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\n/gim, '<br>');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+
+        async function loadSiteSettings() {
+            try {
+                const response = await fetch('/api/settings/all');
+                if (response.ok) {
+                    const settings = await response.json();
+                    const siteName = settings.siteName || 'testerBook';
+                    const siteDesc = settings.siteDescription || 'Learning Management System for Software Testing Students';
+
+                    document.getElementById('siteNameLogo').textContent = siteName;
+
+                    const heroSiteName = document.getElementById('heroSiteName');
+                    if (heroSiteName) heroSiteName.textContent = siteName;
+
+                    const heroSiteDesc = document.getElementById('heroSiteDesc');
+                    if (heroSiteDesc) heroSiteDesc.textContent = siteDesc;
+
+                    document.title = siteName + ' - ' + siteDesc;
+                }
+            } catch (error) {
+                console.error('Error loading site settings:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNavigation();
+            loadTrainingPosts();
+            loadSiteSettings();
+        });
+    </script>
+</body>
+</html>
